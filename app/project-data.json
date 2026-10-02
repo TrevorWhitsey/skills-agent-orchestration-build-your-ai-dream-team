@@ -1,0 +1,28 @@
+{
+  "projects": [
+    {
+      "name": "Fieldnotes",
+      "owner": "Avery Chen",
+      "status": "In progress",
+      "recentActivity": "Contributor review scheduled for Thursday",
+      "priority": "High",
+      "summary": "A fictional research library bringing team interviews and field observations into one searchable place."
+    },
+    {
+      "name": "Open Desk",
+      "owner": "Jordan Patel",
+      "status": "Planning",
+      "recentActivity": "Initial scope shared with the working group",
+      "priority": "Medium",
+      "summary": "An illustrative onboarding guide to help new contributors find tools, context, and their first task."
+    },
+    {
+      "name": "Common Ground",
+      "owner": "Riley Morgan",
+      "status": "Needs review",
+      "recentActivity": "Draft recommendations are ready for feedback",
+      "priority": "Low",
+      "summary": "A made-up accessibility improvement effort focused on clearer patterns across internal resources."
+    }
+  ]
+}

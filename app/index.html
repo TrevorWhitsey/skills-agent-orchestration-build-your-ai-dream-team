@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#F4F6F2">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="header-inner">
+        <p class="wordmark">MONA'S TEAM <span aria-hidden="true">/</span> PORTFOLIO</p>
+        <p class="sample-note">Illustrative sample data · not live project information</p>
+        <div class="heading-block">
+          <p class="eyebrow">A clear view of work in motion</p>
+          <h1>Project Pulse</h1>
+          <p class="intro">A shared snapshot of ownership, momentum, and what needs attention.</p>
+        </div>
+        <div class="header-meta" aria-label="Dashboard details">
+          <span class="meta-mark" aria-hidden="true"></span>
+          <span>TEAM OVERVIEW</span>
+          <span class="meta-divider" aria-hidden="true"></span>
+          <span id="project-count">Loading projects</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">The work</p>
+            <h2 id="projects-heading">Projects</h2>
+          </div>
+          <p class="section-note">Ownership, status, and the latest signal</p>
+        </div>
+        <div id="dashboard" class="dashboard" aria-live="polite" aria-busy="true">
+          <p class="state-message" role="status">Loading project updates…</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <p>PROJECT PULSE <span aria-hidden="true">·</span> ILLUSTRATIVE VIEW</p>
+      <p>Sample records are fictional and provided for demonstration.</p>
+    </footer>
+
+    <script>
+      const dashboard = document.querySelector("#dashboard");
+      const projectCount = document.querySelector("#project-count");
+      const requiredFields = ["name", "owner", "status", "priority", "recentActivity", "summary"];
+
+      function addTextElement(parent, tagName, className, text) {
+        const element = document.createElement(tagName);
+        if (className) element.className = className;
+        element.textContent = text;
+        parent.append(element);
+        return element;
+      }
+
+      function renderProjects(projects) {
+        dashboard.replaceChildren();
+        dashboard.setAttribute("aria-busy", "false");
+        projectCount.textContent = `${projects.length} ${projects.length === 1 ? "PROJECT" : "PROJECTS"}`;
+
+        if (projects.length === 0) {
+          addTextElement(dashboard, "p", "state-message", "No projects to show yet. Check back when project updates are available.");
+          return;
+        }
+
+        for (const project of projects) {
+          const card = document.createElement("article");
+          card.className = "project-card";
+
+          const heading = addTextElement(card, "h3", "project-name", project.name);
+          heading.id = `project-${projects.indexOf(project)}-name`;
+          card.setAttribute("aria-labelledby", heading.id);
+
+          const owner = document.createElement("p");
+          owner.className = "project-owner";
+          addTextElement(owner, "span", "field-label", "OWNER");
+          addTextElement(owner, "span", "owner-name", project.owner);
+          card.append(owner);
+
+          const signals = document.createElement("div");
+          signals.className = "project-signals";
+
+          const status = document.createElement("p");
+          status.className = "status-badge";
+          addTextElement(status, "span", "field-label", "STATUS");
+          addTextElement(status, "span", "status-value", project.status);
+          signals.append(status);
+
+          const priority = document.createElement("p");
+          priority.className = "priority-badge";
+          addTextElement(priority, "span", "field-label", "PRIORITY");
+          addTextElement(priority, "span", "priority-value", project.priority);
+          signals.append(priority);
+          card.append(signals);
+
+          const activity = document.createElement("p");
+          activity.className = "project-activity";
+          addTextElement(activity, "span", "field-label", "RECENT ACTIVITY");
+          addTextElement(activity, "span", "activity-value", project.recentActivity);
+          card.append(activity);
+
+          const summary = document.createElement("p");
+          summary.className = "project-summary";
+          summary.textContent = project.summary;
+          card.append(summary);
+
+          dashboard.append(card);
+        }
+      }
+
+      function showError(message) {
+        dashboard.replaceChildren();
+        dashboard.setAttribute("aria-busy", "false");
+        projectCount.textContent = "UPDATES UNAVAILABLE";
+        const state = addTextElement(dashboard, "div", "state-message state-error", message);
+        state.setAttribute("role", "alert");
+        const retry = addTextElement(state, "button", "retry-button", "Try again");
+        retry.type = "button";
+        retry.addEventListener("click", loadProjects, { once: true });
+      }
+
+      async function loadProjects() {
+        dashboard.replaceChildren();
+        dashboard.setAttribute("aria-busy", "true");
+        addTextElement(dashboard, "p", "state-message", "Loading project updates…");
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) throw new Error(`Project data request failed (${response.status}).`);
+          const data = await response.json();
+          if (!data || !Array.isArray(data.projects)) throw new Error("Project data must contain a projects array.");
+          const validProjects = data.projects.filter((project) =>
+            project && requiredFields.every((field) => typeof project[field] === "string")
+          );
+          if (validProjects.length !== data.projects.length) {
+            throw new Error("Project data is missing one or more required text fields.");
+          }
+          renderProjects(validProjects);
+        } catch (error) {
+          showError(`Project updates could not be loaded. ${error.message}`);
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>
